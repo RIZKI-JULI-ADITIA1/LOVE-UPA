@@ -1,4 +1,4 @@
-<!doctype html>
+ <!doctype html>
 <html lang="en">
  <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> 
@@ -6,6 +6,37 @@
   <title>I LOVE YOU UPA UPA</title> 
  </head> 
  <body mpa-version="9.0.21" mpa-extension-id="ibefaeehajgcpooopoegkifhgecigeeg"> 
+    <div id="photo-layer"></div>
+    <script>
+const photos = [
+  "foto1.jpeg",
+  "foto2.jpeg",
+  "foto3.jpeg",
+  "foto4.jpeg",
+  "foto5.jpeg",
+  "foto6.jpeg",
+  "foto7.jpeg",
+  "foto8.jpeg",
+  "foto9.jpeg",
+  "foto10.jpeg"
+];
+
+const layer = document.getElementById("photo-layer");
+let index = 0;
+
+function showPhoto() {
+  layer.style.backgroundImage = `url('${photos[index]}')`;
+  layer.classList.add("show");
+
+  setTimeout(() => {
+    layer.classList.remove("show");
+  }, 1500);
+
+  index = (index + 1) % photos.length;
+}
+
+setInterval(showPhoto, 3000);
+</script>
   <div id="ui"> 
    <div class="love"> 
     <div class="love_horizontal"> 
@@ -648,6 +679,195 @@
     }
   });
 </script>
+
+<canvas id="particles"></canvas>
+<canvas id="textParticles"></canvas>
+
+<script>
+/* ===============================
+   CURSOR PARTICLES
+================================ */
+const cursorCanvas = document.getElementById("particles");
+const cursorCtx = cursorCanvas.getContext("2d");
+let cursorParticles = [];
+
+function resizeCanvas() {
+  cursorCanvas.width = innerWidth;
+  cursorCanvas.height = innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+function createCursorParticle(x, y) {
+  cursorParticles.push({
+    x,
+    y,
+    size: Math.random() * 4 + 2,
+    vx: (Math.random() - 0.5) * 2,
+    vy: (Math.random() - 0.5) * 2,
+    life: 60
+  });
+}
+
+function animateCursorParticles() {
+  cursorCtx.clearRect(0, 0, cursorCanvas.width, cursorCanvas.height);
+
+  cursorParticles.forEach((p, i) => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life--;
+
+    cursorCtx.fillStyle = "rgba(234,128,176,0.8)";
+    cursorCtx.beginPath();
+    cursorCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    cursorCtx.fill();
+
+    if (p.life <= 0) cursorParticles.splice(i, 1);
+  });
+
+  requestAnimationFrame(animateCursorParticles);
+}
+animateCursorParticles();
+
+document.addEventListener("mousemove", e => {
+  createCursorParticle(e.clientX, e.clientY);
+});
+
+document.addEventListener("touchmove", e => {
+  const t = e.touches[0];
+  createCursorParticle(t.clientX, t.clientY);
+});
+
+/* ===============================
+   TEXT GLITCH + EXPLODE
+================================ */
+const textCanvas = document.getElementById("textParticles");
+const textCtx = textCanvas.getContext("2d");
+let textParticles = [];
+
+function resizeTextCanvas() {
+  textCanvas.width = innerWidth;
+  textCanvas.height = innerHeight;
+}
+window.addEventListener("resize", resizeTextCanvas);
+resizeTextCanvas();
+
+function explodeText(el) {
+  const rect = el.getBoundingClientRect();
+
+  for (let i = 0; i < 40; i++) {
+    textParticles.push({
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      vx: (Math.random() - 0.5) * 6,
+      vy: (Math.random() - 0.5) * 6,
+      life: 40
+    });
+  }
+}
+
+function animateTextParticles() {
+  textCtx.clearRect(0, 0, textCanvas.width, textCanvas.height);
+
+  textParticles.forEach((p, i) => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life--;
+
+    textCtx.fillStyle = "rgba(234,128,176,0.8)";
+    textCtx.beginPath();
+    textCtx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+    textCtx.fill();
+
+    if (p.life <= 0) textParticles.splice(i, 1);
+  });
+
+  requestAnimationFrame(animateTextParticles);
+}
+animateTextParticles();
+
+document.querySelectorAll(".love_word").forEach(el => {
+  el.addEventListener("mouseenter", () => {
+    el.classList.add("glitch");
+    explodeText(el);
+  });
+
+  el.addEventListener("mouseleave", () => {
+    el.classList.remove("glitch");
+  });
+});
+</script>
+
+<script>
+document.querySelectorAll(".love_word").forEach(el => {
+  const originalText = el.textContent;
+  el.innerHTML = "";
+
+  // Bungkus tiap huruf
+  [...originalText].forEach(char => {
+    const span = document.createElement("span");
+    span.textContent = char === " " ? "\u00A0" : char;
+    span.style.setProperty("--rx", Math.random() - 0.5);
+    el.appendChild(span);
+  });
+
+  el.addEventListener("click", () => {
+    const letters = el.querySelectorAll("span");
+
+    letters.forEach(letter => {
+      letter.style.setProperty("--rx", Math.random() - 0.5);
+      letter.classList.remove("fly-letter");
+      void letter.offsetWidth; // reset animasi
+      letter.classList.add("fly-letter");
+    });
+
+    // Balik ke teks normal
+    setTimeout(() => {
+      el.innerHTML = originalText;
+    }, 1000);
+  });
+});
+</script>
+
+<script>
+let secretShown = false;
+
+document.addEventListener("click", (e) => {
+  if (secretShown) return;
+  secretShown = true;
+
+  const ui = document.getElementById("ui");
+  const flash = document.getElementById("dark-flash");
+  const secret = document.getElementById("secret");
+
+  // ambil 1 tulisan pusat saja
+  const centerWord = document.querySelector("#ui .love:nth-child(1) .love_word");
+
+  /* layar gelap */
+  flash.classList.add("show");
+
+  /* glow */
+  centerWord.classList.add("main-glow");
+
+  /* zoom UI */
+  setTimeout(() => {
+    ui.classList.add("zoom-focus");
+  }, 150);
+
+  /* tampilkan pesan */
+  setTimeout(() => {
+    flash.classList.remove("show");
+
+    secret.style.left = e.clientX + "px";
+    secret.style.top = e.clientY + "px";
+    secret.style.transform = "translate(-50%, -120%)";
+    secret.classList.add("show");
+  }, 300);
+});
+</script>
+
+<div id="secret">Untuk Upa 🤍</div>
+<div id="dark-flash"></div>
 
 </body>
 </html>
